@@ -1,0 +1,87 @@
+---
+title: "My Presentation"
+author: "Bao Truong"
+date: "2024-10-10"
+format: 
+  revealjs:
+    theme: solarized
+    transition: fade 
+---
+
+# Introduction
+
+Welcome to my presentation!
+
+# Data Analysis
+
+# Graphs
+```{python}
+#| echo: false
+#| eval: true
+#| fig-cap: "Histogram and Scatter plot (Source: [WDI 2022](https://databank.worldbank.org/source/world-development-indicators))"
+#| label: fig-1
+import pandas as pd
+import wbgapi as wb
+import matplotlib.pyplot as plt
+# Define the indicators to download
+indicators = {
+    'gdp_per_capita': 'NY.GDP.PCAP.CD',
+    'gdp_growth_rate': 'NY.GDP.MKTP.KD.ZG',
+    'inflation_rate': 'FP.CPI.TOTL.ZG',
+    'unemployment_rate': 'SL.UEM.TOTL.ZS',
+    'total_population': 'SP.POP.TOTL',
+    'life_expectancy': 'SP.DYN.LE00.IN',
+    'adult_literacy_rate': 'SE.ADT.LITR.ZS',
+    'income_inequality': 'SI.POV.GINI',
+    'health_expenditure_gdp_share': 'SH.XPD.CHEX.GD.ZS',
+    'measles_immunisation_rate': 'SH.IMM.MEAS',
+    'education_expenditure_gdp_share': 'SE.XPD.TOTL.GD.ZS',
+    'primary_school_enrolment_rate': 'SE.PRM.ENRR',
+    'exports_gdp_share': 'NE.EXP.GNFS.ZS'
+}
+
+# Get the list of country codes for the "World" region
+country_codes = wb.region.members('WLD')
+
+# Download data for countries only in 2022
+df = wb.data.DataFrame(indicators.values(), economy=country_codes, time=2022, skipBlanks=True, labels=True).reset_index()
+
+# Delete the 'economy' column
+df = df.drop(columns=['economy'], errors='ignore')
+
+# Create a reversed dictionary mapping indicator codes to names
+# Rename the columns and convert all names to lowercase
+df.rename(columns=lambda x: {v: k for k, v in indicators.items()}.get(x, x).lower(), inplace=True)
+
+# Sort 'country' in ascending order
+df = df.sort_values('country', ascending=True)
+
+# Reset the index after sorting
+df = df.reset_index(drop=True)
+# Save the data to a CSV file
+df.to_csv('wdi.csv', index=False)
+fig, ax = plt.subplots(1, 2, figsize=(15, 5))
+ax[0].hist(df["inflation_rate"])
+ax[0].set_title("Historgram of Inflation Rate")
+ax[0].set_xlabel("inflation rate")
+ax[0].set_ylabel("Frequency")
+ax[1].scatter(df["gdp_growth_rate"], df["gdp_per_capita"])
+ax[1].set_title("Scatter plot of GDP Growth and GDP per capita")
+ax[1].set_xlabel("GDP Growth")
+ax[1].set_ylabel("GDP per capita")
+plt.tight_layout()
+plt.show()
+```
+
+# Table
+| Variable | Mean   | Std  | Min   | Max  |
+|----------|--------|------|-------|------|
+| Inflation|12.49   |19.68 |-6.69  |171.21|
+| Growth   | 4.37   | 6.63 |-28.76 |63.44 |
+| GDP      |20345.7 |31308.94|259.03|240862.2|
+
+# Conclusion 
+- **Key Point 1**: For 3 variables, we can see the big difference in min and max value
+- **Key Point 2**: The GDP per capita variable has the biggest standard deviation. This can be due to the inequality around the world.
+- **Key Point 3**: Most countries have the inflation less than 25%.
+- **Key Point 4**: There is no correlation between GDP growth and GDP per capita
